@@ -1,6 +1,6 @@
-const { GENESIS_DATA , MINE_RATE} = require("../blockchain/blockchain-config");
-const cryptoHash = require("../utils/crypto/crypto-hash");
-const HexToBinary=require('hex-to-binary')
+import { GENESIS_DATA,MINE_RATE } from "../blockchain/blockchain-config.js";
+import cryptoHash from "../utils/crypto-hash.js";
+import hexToBinary from "hex-to-binary";
 
 //basic building block of blockchain
 class Block{
@@ -31,7 +31,7 @@ class Block{
             timestamp=timestamp=Date.now();
             difficulty=Block.adjustDifficulty({orignalBlock: lastBlock,timestamp});
             hash=cryptoHash(lastHash,timestamp,nonce,difficulty,data);
-        }while(HexToBinary(hash).substring(0,difficulty)!=='0'.repeat(difficulty)); //the jump is high in hex thats why using binary
+        }while(hexToBinary(hash).substring(0,difficulty)!=='0'.repeat(difficulty)); //the jump is high in hex thats why using binary
         
         return new Block({lastHash,timestamp,data,nonce,difficulty,hash});
     }
@@ -47,5 +47,6 @@ class Block{
     }
 }
 
-module.exports= Block;
+
+export default Block;
 

@@ -1,7 +1,7 @@
-const Block = require("../../blockchain/block");
-const { GENESIS_DATA, MINE_RATE } = require("../../blockchain/blockchain-config");
-const cryptoHash = require("../../utils/crypto/crypto-hash");
-const HexToBinary=require('hex-to-binary')
+import Block from "../../blockchain/block.js";
+import { GENESIS_DATA,MINE_RATE } from "../../blockchain/blockchain-config.js";
+import cryptoHash from "../../utils/crypto-hash.js";
+import hexToBinary from "hex-to-binary";
 
 
 //class we are passing- a callback func
@@ -66,7 +66,7 @@ describe('Block',()=>{
         })
 
         it('sets a `hash` that matches the mined block difficulty criteria',()=>{
-            expect(HexToBinary(minedBlock.hash).substring(0,minedBlock.difficulty)).toEqual('0'.repeat(minedBlock.difficulty));
+            expect(hexToBinary(minedBlock.hash).substring(0,minedBlock.difficulty)).toEqual('0'.repeat(minedBlock.difficulty));
         })
 
         it('sets a valid Difficulty',()=>{

@@ -1,5 +1,5 @@
-const Block = require("./block");
-const cryptoHash = require("../utils/crypto/crypto-hash");
+import Block from './block.js';
+import cryptoHash from '../utils/crypto-hash.js';
 
 class Blockchain{
     constructor(){
@@ -63,4 +63,5 @@ class Blockchain{
         this.chain=newchain;
     }
 }
-module.exports=Blockchain;
+
+export default Blockchain;

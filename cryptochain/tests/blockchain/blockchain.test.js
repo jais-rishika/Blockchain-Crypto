@@ -1,6 +1,8 @@
-const Block = require('../../blockchain/block');
-const Blockchain = require('../../blockchain/blockchain');
-const cryptoHash = require('../../utils/crypto/crypto-hash');
+import Blockchain from "../../blockchain/blockchain.js";
+import Block from "../../blockchain/block.js";
+import cryptoHash from "../../utils/crypto-hash.js";
+import { jest } from '@jest/globals';
+
 
 describe('valid blockchain',()=>{
     let blockchain, newChain, orignalChain;

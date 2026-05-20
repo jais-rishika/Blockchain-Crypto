@@ -1,4 +1,4 @@
-const { createClient } = require('redis');
+import { createClient } from 'redis';
 
 const CHANNELS = {
     TEST: 'TEST',
@@ -66,4 +66,4 @@ class Pubsub {
     }
 }
 
-module.exports = Pubsub;
+export default Pubsub;

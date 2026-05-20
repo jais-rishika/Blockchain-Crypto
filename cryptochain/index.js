@@ -1,10 +1,8 @@
-const express=require('express');
-const bodyParser = require('body-parser');
-
-const Blockchain=require('./blockchain/blockchain');
-const Pubsub= require('./pubsub/pubsub')
-
-require('dotenv').config();
+import 'dotenv/config';
+import express from 'express';
+import bodyParser from 'body-parser';
+import Blockchain from './blockchain/blockchain.js'
+import Pubsub from './pubsub/pubsub.js';
 
 const app=express();
 const blockchain=new Blockchain();

@@ -1,15 +1,8 @@
-// redisClient.js
-const { createClient } = require('redis');
+import { createClient } from 'redis';
+
 
 function createRedisClient() {
   const client = createClient({
-    // username: 'default',
-    // password: process.env.REDIS_PASSWORD,
-    // socket: {
-    //   host: process.env.REDIS_HOST,
-    //   port: Number(process.env.REDIS_PORT),
-    //   tls: true // keep true since your test worked
-    // }
     url: process.env.REDIS_URL
   });
 
@@ -17,4 +10,4 @@ function createRedisClient() {
   return client;
 }
 
-module.exports = { createRedisClient };
+export default createRedisClient;

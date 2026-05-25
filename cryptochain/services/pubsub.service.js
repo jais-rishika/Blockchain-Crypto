@@ -2,12 +2,14 @@ import { createClient } from 'redis';
 
 const CHANNELS = {
     TEST: 'TEST',
-    BLOCKCHAIN: 'BLOCKCHAIN'
+    BLOCKCHAIN: 'BLOCKCHAIN',
+    TRANSACTION: 'TRANSACTION'
 };
 
 class Pubsub {
-    constructor({ blockchain }) {
+    constructor({ blockchain,transactionPool }) {
         this.blockchain = blockchain;
+        this.transactionPool=transactionPool;
 
         // Use your cloud config or REDIS_URL
         this.publisher = createClient({ url: process.env.REDIS_URL });
@@ -28,10 +30,22 @@ class Pubsub {
 
     handleMessage(channel, message) {
         console.log(`Message received. ${channel}: ${message}`);
+        const parsedMessage = JSON.parse(message);
 
-        if (channel === CHANNELS.BLOCKCHAIN) {
-            const parsedMessage = JSON.parse(message);
-            this.blockchain.replaceChain(parsedMessage);
+        switch (channel){
+            case CHANNELS.BLOCKCHAIN:
+                this.blockchain.replaceChain(
+                    parsedMessage,
+                    true,
+                    ()=> this.transactionPool.clearBlockChainTransaction({chain: parsedMessage})
+                );
+                break;
+            case CHANNELS.TRANSACTION:
+                this.transactionPool.setTransaction(parsedMessage);
+                break;
+            default:
+                console.log("Unknown Channel");
+                return;
         }
     }
 
@@ -54,6 +68,13 @@ class Pubsub {
         return this.publish({
             channel: CHANNELS.BLOCKCHAIN,
             message: JSON.stringify(this.blockchain.chain)
+        });
+    }
+
+    broadcastTransaction(transaction) {
+        return this.publish({
+            channel: CHANNELS.TRANSACTION,
+            message: JSON.stringify(transaction)
         });
     }
 

@@ -1,7 +1,9 @@
-import { verifySignature } from "../../utils/elliptic.js";
-import Transaction from "../../wallet/transaction.js";
-import Wallet from "../../wallet/wallet.js";
 import { beforeEach, describe, expect, jest } from '@jest/globals';
+import { MINING_REWARD, REWARD_INPUT } from "../../shared/config/blockchain-config.js";
+import { verifySignature } from "../../domain/utils/elliptic.js";
+import Transaction from "../../domain/wallet/transaction.js";
+import Wallet from "../../domain/wallet/wallet.js";
+
 
 
 describe('Transaction',()=>{
@@ -141,7 +143,7 @@ describe('Transaction',()=>{
                     expect(transaction.outputMap[nextRecipient]).toEqual(nextAmount+addedAmount);
                 })
 
-                it('sibtracts the amount from the orignal sender output amount',()=>{
+                it('subtracts the amount from the orignal sender output amount',()=>{
                     expect(transaction.outputMap[senderWallet.publicKey]).toEqual(
                         orignalSenderOutput-nextAmount-addedAmount
                     )
@@ -150,5 +152,22 @@ describe('Transaction',()=>{
         })
 
 
-    })
+    });
+
+    describe('rewardTransaction()',()=>{
+        let rewardTransaction, minerWallet;
+
+        beforeEach(()=>{
+            minerWallet= new Wallet();
+            rewardTransaction=Transaction.rewardTransaction({minerWallet});
+        });
+
+        it('creates a transaction with the reward input',()=>{
+            expect(rewardTransaction.input).toEqual(REWARD_INPUT);
+        });
+
+        it('creates one transaction for the miner with the `MINING_REWARD`',()=>{
+            expect(rewardTransaction.outputMap[minerWallet.publicKey]).toEqual(MINING_REWARD);
+        })
+    });
 })

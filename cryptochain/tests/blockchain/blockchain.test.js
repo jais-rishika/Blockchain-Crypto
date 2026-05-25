@@ -1,15 +1,19 @@
-import Blockchain from "../../blockchain/blockchain.js";
-import Block from "../../blockchain/block.js";
-import cryptoHash from "../../utils/crypto-hash.js";
-import { jest } from '@jest/globals';
-
+import Blockchain from "../../domain/blockchain/blockchain.js";
+import Block from "../../domain/blockchain/block.js";
+import cryptoHash from "../../domain/utils/crypto-hash.js";
+import {jest} from "@jest/globals";
+import Wallet from "../../domain/wallet/wallet.js";
+import Transaction from "../../domain/wallet/transaction.js";
 
 describe('valid blockchain',()=>{
-    let blockchain, newChain, orignalChain;
+    let blockchain, newChain, orignalChain,errorMock;
     beforeEach(()=>{
         blockchain=new Blockchain();
         newChain=new Blockchain();
         orignalChain=blockchain.chain;
+        
+        errorMock=jest.fn();
+        global.console.error=errorMock;
     })
 
     it('contains a `chain` Array instance',()=>{
@@ -85,12 +89,12 @@ describe('valid blockchain',()=>{
     })
 
     describe('replaceChain()',()=>{
-        let logmock,errormock;
+        let logmock;
         beforeEach(()=>{
-            errormock= jest.fn();
+            // errormock= jest.fn();
             logmock=jest.fn();
 
-            global.console.error=errormock;
+            // global.console.error=errormock;
             global.console.log=logmock;
         })
 
@@ -103,9 +107,9 @@ describe('valid blockchain',()=>{
                 expect(blockchain.chain).toEqual(orignalChain);
             })
             it('logs an error',()=>{
-                expect(errormock).toHaveBeenCalled();
+                expect(errorMock).toHaveBeenCalled();
             })
-        })
+        });
 
         describe('when the chain is longer',()=>{
             beforeEach(()=>{
@@ -123,7 +127,7 @@ describe('valid blockchain',()=>{
                     expect(blockchain.chain).toEqual(orignalChain);
                 })
                 it('logs an error',()=>{
-                    expect(errormock).toHaveBeenCalled();
+                    expect(errorMock).toHaveBeenCalled();
                 })
             })
 
@@ -138,6 +142,100 @@ describe('valid blockchain',()=>{
                     expect(logmock).toHaveBeenCalled();
                 })
             })
+        });
+
+        describe("and the ValidTransaction flag is true",()=>{
+            it("calls the validTransactionData",()=>{
+                const validTransactionDataMock=jest.fn();
+                
+                blockchain.validTransactionData=validTransactionDataMock;
+
+                newChain.addBlock({data: 'foo'})
+                blockchain.replaceChain(newChain.chain,true);
+                
+                expect(validTransactionDataMock).toHaveBeenCalled();
+            })
+        });
+    })
+
+    describe('validTransactionData()',()=>{
+        let transaction, wallet, rewardTransaction;
+
+        beforeEach(()=>{
+            wallet= new Wallet();
+            transaction=wallet.createTransaction({recipient: 'foo-address', amount: 60});
+            rewardTransaction= Transaction.rewardTransaction({minerWallet: wallet});
         })
+
+        describe('and the transaction data is valid',()=>{
+            it('returns true',()=>{
+                newChain.addBlock({data: [transaction,rewardTransaction]});
+                expect(blockchain.validTransactionData({chain: newChain.chain})).toBe(true);
+            });
+        });
+
+        describe('and the transaction data has multiple rewards',()=>{
+            it('returns false',()=>{
+                newChain.addBlock({data: [transaction,rewardTransaction,rewardTransaction]});
+                expect(blockchain.validTransactionData({chain: newChain.chain})).toBe(false);
+                expect(errorMock).toHaveBeenCalled();
+            });
+        });
+
+        describe('and the transaction data has at least one malformed outputMap',()=>{
+            describe('and the transaction is not a reward transaction',()=>{
+                it('returns false',()=>{
+                    transaction.outputMap[wallet.publicKey]=99999;
+
+                    newChain.addBlock({data: [transaction,rewardTransaction]});
+                    expect(blockchain.validTransactionData({chain: newChain.chain})).toBe(false);
+                    expect(errorMock).toHaveBeenCalled();
+                });
+            })
+            describe('and the transaction is a reward transaction',()=>{
+                it('returns false',()=>{
+                    rewardTransaction.outputMap[wallet.publicKey]=99999;
+
+                    newChain.addBlock({data: [transaction,rewardTransaction]});
+                    expect(blockchain.validTransactionData({chain: newChain.chain})).toBe(false);
+                    expect(errorMock).toHaveBeenCalled();
+                });
+            })
+        })
+
+        describe('and the transaction data has at least one malformed input',()=>{
+            it('returns false',()=>{
+                wallet.balance=9000;
+                
+                const evilOutputMap={
+                    [wallet.publicKey]: 8900,
+                    fooRecipient: 100
+                };
+
+                const evilTransaction={
+                    input: {
+                        timestamp: Date.now(),
+                        amount: wallet.balance,
+                        address: wallet.publicKey,
+                        signature: wallet.sign(evilOutputMap)
+                    },
+                    outputMap: evilOutputMap
+                }
+
+                newChain.addBlock({data: [evilTransaction,rewardTransaction]});
+                expect(blockchain.validTransactionData({chain: newChain.chain})).toBe(false);
+                expect(errorMock).toHaveBeenCalled();
+            });
+        });
+
+        describe('and the block contains multiple identical transaction',()=>{
+            it('returns false',()=>{
+
+                newChain.addBlock({data: [transaction,rewardTransaction,transaction]});
+                expect(blockchain.validTransactionData({chain: newChain.chain})).toBe(false);
+                expect(errorMock).toHaveBeenCalled();
+            });
+        })
+
     })
 })

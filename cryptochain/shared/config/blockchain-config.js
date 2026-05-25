@@ -10,5 +10,6 @@ export const GENESIS_DATA={
 };
 
 export const STARTING_BALANCE=1000;
+export const REWARD_INPUT={ address: '*authorized-reward*' };;
+export const MINING_REWARD=50;
 
-export default {GENESIS_DATA,MINE_RATE,STARTING_BALANCE}

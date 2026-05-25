@@ -1,7 +1,8 @@
-import Block from "../../blockchain/block.js";
-import { GENESIS_DATA,MINE_RATE } from "../../blockchain/blockchain-config.js";
-import cryptoHash from "../../utils/crypto-hash.js";
 import hexToBinary from "hex-to-binary";
+import Block from "../../domain/blockchain/block.js";
+import { GENESIS_DATA , MINE_RATE} from "../../shared/config/blockchain-config.js";
+import cryptoHash from "../../domain/utils/crypto-hash.js";
+
 
 
 //class we are passing- a callback func
